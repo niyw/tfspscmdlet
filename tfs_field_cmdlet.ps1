@@ -222,3 +222,51 @@ else{
 }
 
 }
+
+
+Function Export-TfsFieldsToCsv{
+<#
+    .SYNOPSIS
+        更新列表字段的值清单
+
+    .DESCRIPTION
+        更新列表字段的值清单
+
+    .PARAMETER Organization
+        集合名称
+
+    .PARAMETER FilePath
+        输出文件路径
+
+    .EXAMPLE
+        # 导出集合内所有字段到CSV
+        PS C:\> Export-TfsFieldsToCsv -Organization default
+#>
+Param(
+    [Parameter(
+    Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,
+    HelpMessage="集合名称")]
+    [string]$Organization,
+
+    [Parameter(
+    Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,        
+    HelpMessage='输出的文件路径')]
+    [string]$FilePath
+)
+# GET https://dev.azure.com/{organization}/_apis/wit/fields?api-version=5.1
+$uri="$($TfsHost)/$($Organization)/_apis/wit/fields?api-version=5.1"
+
+$response=Invoke-WebRequest -Uri $uri -Method GET -ContentType "application/json" -Headers $RestHeaders
+if($SuccessCode -contains $response.StatusCode){
+    $RetObject=$response.Content|ConvertFrom-Json
+    $RetObject.value|Export-Csv -Path $FilePath -Encoding UTF8 -NoTypeInformation
+}
+else{
+    Write-Warning "Export Fields to CSV Failed"
+}
+
+}
