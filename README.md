@@ -27,3 +27,12 @@ export all fields in specified collection
 ``` powershell
 Export-TfsFieldsToCsv -Organization Default -FilePath C:\Test\default_fields.csv
 ```
+
+
+## Find-TfsFields
+### description
+find field using keyword in specified collection
+### example
+``` powershell
+Find-TfsFields -Organization Default -Keyword test
+```
