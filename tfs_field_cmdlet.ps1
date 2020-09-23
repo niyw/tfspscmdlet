@@ -370,3 +370,65 @@ else{
 }
 
 }
+
+Function Find-TfsWorkItemTypes{
+<#
+    .SYNOPSIS
+        根据关键字或ID查找工作项类型信息
+
+    .DESCRIPTION
+        根据关键字或ID查找工作项类型信息
+
+    .PARAMETER Organization
+        集合名称
+
+    .PARAMETER Keyword
+        进程关键字
+
+    .EXAMPLE
+        # 导出集合内所有字段到CSV
+        PS C:\> Find-TfsWorkItemTypes -Organization default -ProcessName test -Keyword Demo
+#>
+Param(
+    [Parameter(
+    Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,
+    HelpMessage="集合名称")]
+    [string]$Organization,
+
+    [Parameter(
+    Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,        
+    HelpMessage='进程名')]
+    [string]$ProcessName,
+
+    [Parameter(
+    Mandatory=$false,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,        
+    HelpMessage='查询关键字')]
+    [string]$Keyword=$null
+)
+
+$processId = (Find-TfsProcesses -Organization $Organization -Keyword $ProcessName).typeId
+
+# GET https://dev.azure.com/{organization}/_apis/work/processes/{processId}/workitemtypes?api-version=5.1-preview.2
+$uri="$($TfsHost)/$($Organization)/_apis/work/processes/$($processId)/workitemtypes?api-version=5.1-preview.2"
+
+$response=Invoke-WebRequest -Uri $uri -Method GET -ContentType "application/json" -Headers $RestHeaders
+if($SuccessCode -contains $response.StatusCode){
+    $RetObject=$response.Content|ConvertFrom-Json    
+    if($Keyword -eq $null){
+        $RetObject
+    }
+    else{
+        $RetObject.value|Where-Object { $_.referenceName.ToLower().Contains($Keyword.ToLower()) -or $_.name.ToLower().Contains($Keyword.ToLower()) }
+    }
+}
+else{
+    Write-Warning "Find tfs WorkItemTypes failed"
+}
+
+}
