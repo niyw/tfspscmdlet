@@ -432,3 +432,60 @@ else{
 }
 
 }
+
+Function Get-TfsWorkItemFields{
+<#
+    .SYNOPSIS
+        更新列表字段的值清单
+
+    .DESCRIPTION
+        更新列表字段的值清单
+
+    .PARAMETER Organization
+        集合名称
+
+    .PARAMETER FilePath
+        输出文件路径
+
+    .EXAMPLE
+        # 导出集合内所有字段到CSV
+        PS C:\> Export-TfsFieldsToCsv -Organization default
+#>
+Param(
+    [Parameter(
+    Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,
+    HelpMessage="集合名称")]
+    [string]$Organization,
+
+    [Parameter(
+    Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,        
+    HelpMessage='进程名')]
+    [string]$ProcessName,
+
+    [Parameter(
+    Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,        
+    HelpMessage='工作项名')]
+    [string]$WitName
+)
+
+$processId = (Find-TfsProcesses -Organization $Organization -Keyword $ProcessName).typeId
+$witTypeRefName=(Find-TfsWorkItemTypes -Organization $Organization -ProcessName $ProcessName -Keyword $WitName ).referenceName
+# GET https://dev.azure.com/{organization}/_apis/work/processes/{processId}/workItemTypes/{witRefName}/fields?api-version=5.1-preview.2
+$uri="$($TfsHost)/$($Organization)/_apis/work/processes/$($processId)/workItemTypes/$($witTypeRefName)/fields?api-version=5.1-preview.2"
+
+$response=Invoke-WebRequest -Uri $uri -Method GET -ContentType "application/json" -Headers $RestHeaders
+if($SuccessCode -contains $response.StatusCode){
+    $RetObject=$response.Content|ConvertFrom-Json    
+    $RetObject.value
+}
+else{
+    Write-Warning "Get TfsWorkItemFields failed"
+}
+
+}
