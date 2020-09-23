@@ -11,7 +11,5 @@ customize powershell cmdlet for managing field in ads
 $Global:Tfs_PAT='pat' # your pat
 $Global:TfsHost='http://yourazuredevops'; # your azure devops hostname
 ```
-
-# documents
 - [function list](https://github.com/niyw/tfspscmdlet/wiki/function-list)
 
