@@ -11,6 +11,10 @@ customize powershell cmdlet for managing field in ads
 - Get-TfsPicklist
 - Remove-TfsPicklist
 - Export-TfsFieldsToCsv
+- Find-TfsFields
+- Find-TfsProcesses
+- Find-TfsWorkItemTypes
+- Get-TfsWorkItemFields
 
 ## Add-TfsField
 ### description
@@ -28,11 +32,18 @@ export all fields in specified collection
 Export-TfsFieldsToCsv -Organization Default -FilePath C:\Test\default_fields.csv
 ```
 
-
 ## Find-TfsFields
 ### description
 find field using keyword in specified collection
 ### example
 ``` powershell
 Find-TfsFields -Organization Default -Keyword test
+```
+
+## Get-TfsWorkItemFields
+### description
+export all fields in specified workitem type, process, and collection to target csv file
+### example
+``` powershell
+(Get-TfsWorkItemFields -Organization default -ProcessName process1 -WitName myworkitem)|Export-Csv -Path "c:\test.csv" -Encoding UTF8 -NoTypeInformation
 ```
