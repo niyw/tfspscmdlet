@@ -317,3 +317,56 @@ else{
 }
 
 }
+
+
+Function Find-TfsProcesses{
+<#
+    .SYNOPSIS
+        根据关键字或ID查找进程信息
+
+    .DESCRIPTION
+        根据关键字或ID查找进程信息
+
+    .PARAMETER Organization
+        集合名称
+
+    .PARAMETER Keyword
+        进程关键字
+
+    .EXAMPLE
+        # 导出集合内所有字段到CSV
+        PS C:\> Find-TfsProcesses -Organization default -Keyword Demo
+#>
+Param(
+    [Parameter(
+    Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,
+    HelpMessage="集合名称")]
+    [string]$Organization,
+
+    [Parameter(
+    Mandatory=$false,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,        
+    HelpMessage='查询关键字')]
+    [string]$Keyword=$null
+)
+# GET https://dev.azure.com/{organization}/_apis/work/processes?api-version=5.1
+$uri="$($TfsHost)/$($Organization)/_apis/work/processes?api-version=5.1-preview.2"
+
+$response=Invoke-WebRequest -Uri $uri -Method GET -ContentType "application/json" -Headers $RestHeaders
+if($SuccessCode -contains $response.StatusCode){
+    $RetObject=$response.Content|ConvertFrom-Json    
+    if($Keyword -eq $null){
+        $RetObject
+    }
+    else{
+        $RetObject.value|Where-Object { $_.typeId.ToLower().Contains($Keyword.ToLower()) -or $_.name.ToLower().Contains($Keyword.ToLower()) }
+    }
+}
+else{
+    Write-Warning "Find field failed"
+}
+
+}
