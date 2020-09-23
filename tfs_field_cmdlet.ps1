@@ -270,3 +270,50 @@ else{
 }
 
 }
+
+Function Find-TfsFields{
+<#
+    .SYNOPSIS
+        按关键字在集合内查找特定字段
+
+    .DESCRIPTION
+        按关键字在集合内查找特定字段，支持按名字或ReferenceName
+
+    .PARAMETER Organization
+        集合名称
+
+    .PARAMETER Keyword
+        查询关键字
+
+    .EXAMPLE
+        # 按关键字查找字段
+        PS C:\> Find-TfsFields -Organization default -Keyword test
+#>
+Param(
+    [Parameter(
+    Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,
+    HelpMessage="集合名称")]
+    [string]$Organization,
+
+    [Parameter(
+    Mandatory=$true,
+    ValueFromPipeline=$true,
+    ValueFromPipelineByPropertyName=$true,        
+    HelpMessage='查询关键字')]
+    [string]$Keyword
+)
+# GET https://dev.azure.com/{organization}/_apis/wit/fields?api-version=5.1
+$uri="$($TfsHost)/$($Organization)/_apis/wit/fields?api-version=5.1"
+
+$response=Invoke-WebRequest -Uri $uri -Method GET -ContentType "application/json" -Headers $RestHeaders
+if($SuccessCode -contains $response.StatusCode){
+    $RetObject=$response.Content|ConvertFrom-Json    
+    $RetObject.value|Where-Object { $_.referenceName.ToLower().Contains($Keyword.ToLower()) -or $_.name.ToLower().Contains($Keyword.ToLower()) }
+}
+else{
+    Write-Warning "Find field failed"
+}
+
+}
